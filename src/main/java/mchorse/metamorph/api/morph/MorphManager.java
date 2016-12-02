@@ -42,8 +42,7 @@ import mchorse.metamorph.api.attacks.WitherAttack;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
-import net.minecraft.entity.monster.EntitySkeleton;
-import net.minecraft.entity.monster.SkeletonType;
+import net.minecraft.entity.monster.EntityWitherSkeleton;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -172,14 +171,9 @@ public class MorphManager
      */
     public String morphNameFromEntity(Entity entity)
     {
-        if (entity instanceof EntitySkeleton)
+        if (entity instanceof EntityWitherSkeleton)
         {
-            SkeletonType skeleton = ((EntitySkeleton) entity).func_189771_df();
-
-            if (skeleton.equals(SkeletonType.WITHER))
-            {
-                return "WitherSkeleton";
-            }
+            return "WitherSkeleton";
         }
 
         return EntityList.getEntityString(entity);

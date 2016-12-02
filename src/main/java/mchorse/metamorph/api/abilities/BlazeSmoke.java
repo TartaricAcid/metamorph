@@ -15,7 +15,7 @@ public class BlazeSmoke extends Ability
     @Override
     public void update(EntityPlayer player)
     {
-        if (player.worldObj.isRemote)
+        if (player.world.isRemote)
         {
             Random rand = player.getRNG();
 
@@ -25,7 +25,7 @@ public class BlazeSmoke extends Ability
                 double y = player.posY + rand.nextDouble() * (double) player.height;
                 double z = player.posZ + (rand.nextDouble() - 0.5D) * (double) player.width;
 
-                player.worldObj.spawnParticle(EnumParticleTypes.SMOKE_LARGE, x, y, z, 0.0D, 0.0D, 0.0D, new int[0]);
+                player.world.spawnParticle(EnumParticleTypes.SMOKE_LARGE, x, y, z, 0.0D, 0.0D, 0.0D, new int[0]);
             }
         }
     }

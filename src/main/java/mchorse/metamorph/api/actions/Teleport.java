@@ -34,7 +34,7 @@ public class Teleport implements IAction
         Vec3d look = player.getLook(1.0F);
         Vec3d vec = pos.addVector(look.xCoord * reachDistance, look.yCoord * reachDistance, look.zCoord * reachDistance);
 
-        RayTraceResult result = player.worldObj.rayTraceBlocks(pos, vec, false, false, true);
+        RayTraceResult result = player.world.rayTraceBlocks(pos, vec, false, false, true);
 
         if (result != null && result.typeOfHit == Type.BLOCK)
         {
@@ -45,7 +45,7 @@ public class Teleport implements IAction
                 return;
             }
 
-            if (player.isSneaking() || !player.worldObj.getBlockState(block.offset(EnumFacing.UP)).getBlock().equals(Blocks.AIR))
+            if (player.isSneaking() || !player.world.getBlockState(block.offset(EnumFacing.UP)).getBlock().equals(Blocks.AIR))
             {
                 block = block.offset(result.sideHit);
             }
@@ -54,10 +54,10 @@ public class Teleport implements IAction
             double y = block.getY() + 1.0F;
             double z = block.getZ() + 0.5F;
 
-            player.worldObj.playSound(null, player.prevPosX, player.prevPosY, player.prevPosZ, SoundEvents.ENTITY_ENDERMEN_TELEPORT, SoundCategory.HOSTILE, 1.0F, 1.0F);
+            player.world.playSound(null, player.prevPosX, player.prevPosY, player.prevPosZ, SoundEvents.ENTITY_ENDERMEN_TELEPORT, SoundCategory.HOSTILE, 1.0F, 1.0F);
             player.setPositionAndUpdate(x, y, z);
             player.resetCooldown();
-            player.worldObj.playSound(null, player.posX, player.posY, player.posZ, SoundEvents.ENTITY_ENDERMEN_TELEPORT, SoundCategory.HOSTILE, 1.0F, 1.0F);
+            player.world.playSound(null, player.posX, player.posY, player.posZ, SoundEvents.ENTITY_ENDERMEN_TELEPORT, SoundCategory.HOSTILE, 1.0F, 1.0F);
         }
     }
 }

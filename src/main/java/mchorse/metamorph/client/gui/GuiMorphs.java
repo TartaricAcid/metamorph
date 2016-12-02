@@ -61,7 +61,7 @@ public class GuiMorphs extends GuiScreen
     public GuiMorphs()
     {
         Map<String, Morph> morphs = MorphManager.INSTANCE.morphs;
-        EntityPlayer player = Minecraft.getMinecraft().thePlayer;
+        EntityPlayer player = Minecraft.getMinecraft().player;
         IMorphing morphing = Morphing.get(player);
 
         int index = 0;
@@ -142,10 +142,10 @@ public class GuiMorphs extends GuiScreen
      */
     protected void clampScroll()
     {
-        float max = MathHelper.ceiling_float_int((float) this.morphs.size() / (float) this.perRow) * 60;
+        float max = MathHelper.ceil((float) this.morphs.size() / (float) this.perRow) * 60;
         float maxScroll = max - (height - 60);
 
-        this.scroll = MathHelper.clamp_float(this.scroll, 0.0F, maxScroll);
+        this.scroll = MathHelper.clamp(this.scroll, 0.0F, maxScroll);
     }
 
     /**
@@ -233,7 +233,7 @@ public class GuiMorphs extends GuiScreen
     {
         super.keyTyped(typedChar, keyCode);
 
-        float max = MathHelper.ceiling_float_int((float) this.morphs.size() / (float) this.perRow) * 60;
+        float max = MathHelper.ceil((float) this.morphs.size() / (float) this.perRow) * 60;
 
         if (keyCode == Keyboard.KEY_DOWN)
         {
@@ -290,7 +290,7 @@ public class GuiMorphs extends GuiScreen
 
         /* Don't run with scissor, or you might get clipped */
         GuiMenu.scissor(0, 30, width, height - 60, width, height);
-        EntityPlayer player = Minecraft.getMinecraft().thePlayer;
+        EntityPlayer player = Minecraft.getMinecraft().player;
 
         int w = (width - 40);
         int m = w / this.perRow;
@@ -333,7 +333,7 @@ public class GuiMorphs extends GuiScreen
     {
         int trimmedHeight = (height - 60);
 
-        float max = MathHelper.ceiling_float_int((float) this.morphs.size() / (float) this.perRow) * 60;
+        float max = MathHelper.ceil((float) this.morphs.size() / (float) this.perRow) * 60;
         float maxScroll = max - trimmedHeight;
         float factor = trimmedHeight / max;
 
@@ -344,7 +344,7 @@ public class GuiMorphs extends GuiScreen
         }
 
         int x = width - 20;
-        int h = MathHelper.clamp_int((int) (factor * trimmedHeight), 20, trimmedHeight);
+        int h = MathHelper.clamp((int) (factor * trimmedHeight), 20, trimmedHeight);
         int y = (int) (this.scroll / maxScroll * (trimmedHeight - h - 4));
 
         Gui.drawRect(x, 32 + y, x + 4, 32 + y + h, 0xddffffff);

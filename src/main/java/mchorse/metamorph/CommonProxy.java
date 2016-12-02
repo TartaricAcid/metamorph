@@ -12,6 +12,7 @@ import mchorse.metamorph.capabilities.morphing.MorphingStorage;
 import mchorse.metamorph.config.MetamorphConfig;
 import mchorse.metamorph.entity.EntityMorph;
 import mchorse.metamorph.network.Dispatcher;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraftforge.common.MinecraftForge;
@@ -58,7 +59,7 @@ public class CommonProxy
         MinecraftForge.EVENT_BUS.register(this.config);
 
         /* Entities */
-        EntityRegistry.registerModEntity(EntityMorph.class, "Morph", 0, Metamorph.instance, 64, 3, false);
+        EntityRegistry.registerModEntity(new ResourceLocation("metamorph:Morph"), EntityMorph.class, "Morph", 0, Metamorph.instance, 64, 3, false);
 
         this.loadModels();
     }

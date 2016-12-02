@@ -19,9 +19,9 @@ public class Snowball implements IAction
     @Override
     public void execute(EntityPlayer player)
     {
-        if (!player.worldObj.isRemote)
+        if (!player.world.isRemote)
         {
-            EntitySnowball snowball = new EntitySnowball(player.worldObj, player);
+            EntitySnowball snowball = new EntitySnowball(player.world, player);
             Vec3d vec3d = player.getLook(1.0F);
 
             double d1 = 4.0D;
@@ -35,7 +35,7 @@ public class Snowball implements IAction
             snowball.motionZ = d4;
 
             player.playSound(SoundEvents.ENTITY_SNOWMAN_SHOOT, 1.0F, 1.0F / (player.getRNG().nextFloat() * 0.4F + 0.8F));
-            player.worldObj.spawnEntityInWorld(snowball);
+            player.world.spawnEntity(snowball);
         }
     }
 }

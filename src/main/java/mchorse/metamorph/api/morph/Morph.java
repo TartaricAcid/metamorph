@@ -66,17 +66,11 @@ public class Morph
         /* This is a total rip-off of EntityPlayer#setSize method */
         if (width != player.width || height != player.height)
         {
-            float f = player.width;
-            AxisAlignedBB axisalignedbb = player.getEntityBoundingBox();
+            float w = width / 2;
 
             player.width = width;
             player.height = height;
-            player.setEntityBoundingBox(new AxisAlignedBB(axisalignedbb.minX, axisalignedbb.minY, axisalignedbb.minZ, axisalignedbb.minX + width, axisalignedbb.minY + height, axisalignedbb.minZ + width));
-
-            if (player.width > f && !player.worldObj.isRemote)
-            {
-                player.moveEntity(f - player.width, 0.0D, f - player.width);
-            }
+            player.setEntityBoundingBox(new AxisAlignedBB(player.posX - w, player.posY, player.posZ - w, player.posX + w, player.posY + height, player.posZ + w));
         }
     }
 

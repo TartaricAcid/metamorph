@@ -92,7 +92,7 @@ public class RenderPlayer extends RenderLivingBase<EntityPlayer>
      * an elytra. You know,
      */
     @Override
-    protected void rotateCorpse(EntityPlayer player, float pitch, float yaw, float partialTicks)
+    protected void applyRotations(EntityPlayer player, float pitch, float yaw, float partialTicks)
     {
         if (player.isEntityAlive() && player.isPlayerSleeping())
         {
@@ -104,10 +104,10 @@ public class RenderPlayer extends RenderLivingBase<EntityPlayer>
         else if (player.isElytraFlying())
         {
             /* Elytra rotation */
-            super.rotateCorpse(player, pitch, yaw, partialTicks);
+            super.applyRotations(player, pitch, yaw, partialTicks);
 
             float f = player.getTicksElytraFlying() + partialTicks;
-            float f1 = MathHelper.clamp_float(f * f / 100.0F, 0.0F, 1.0F);
+            float f1 = MathHelper.clamp(f * f / 100.0F, 0.0F, 1.0F);
 
             Vec3d vec3d = player.getLook(partialTicks);
 
@@ -126,7 +126,7 @@ public class RenderPlayer extends RenderLivingBase<EntityPlayer>
         }
         else
         {
-            super.rotateCorpse(player, pitch, yaw, partialTicks);
+            super.applyRotations(player, pitch, yaw, partialTicks);
         }
     }
 

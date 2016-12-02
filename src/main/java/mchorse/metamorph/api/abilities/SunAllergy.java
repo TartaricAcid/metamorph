@@ -21,7 +21,7 @@ public class SunAllergy extends Ability
     @Override
     public void update(EntityPlayer player)
     {
-        if (!player.worldObj.isDaytime() || player.worldObj.isRemote)
+        if (!player.world.isDaytime() || player.world.isRemote)
         {
             return;
         }
@@ -30,7 +30,7 @@ public class SunAllergy extends Ability
         boolean random = this.random.nextFloat() * 30.0F < (brightness - 0.4F) * 2.0F;
         this.pos.setPos(player.posX, player.posY, player.posZ);
 
-        if (brightness > 0.5 && random && player.worldObj.canSeeSky(pos))
+        if (brightness > 0.5 && random && player.world.canSeeSky(pos))
         {
             player.setFire(8);
         }

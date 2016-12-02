@@ -65,7 +65,7 @@ public class GuiOverlay extends Gui
 
             /* Render overlay */
             mc.renderEngine.bindTexture(data.defaultTexture);
-            GuiMenu.drawModel(model, mc.thePlayer, 15, y, 15, (float) alpha / 255);
+            GuiMenu.drawModel(model, mc.player, 15, y, 15, (float) alpha / 255);
             font.drawString(string, 30, y - 7, color);
 
             morph.timer--;

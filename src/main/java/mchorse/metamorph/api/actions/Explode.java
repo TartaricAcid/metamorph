@@ -17,12 +17,12 @@ public class Explode implements IAction
     @Override
     public void execute(EntityPlayer player)
     {
-        if (player.worldObj.isRemote)
+        if (player.world.isRemote)
         {
             return;
         }
 
-        player.worldObj.createExplosion(player, player.posX, player.posY, player.posZ, 3, true);
+        player.world.createExplosion(player, player.posX, player.posY, player.posZ, 3, true);
 
         if (!player.isCreative())
         {

@@ -25,15 +25,15 @@ public class SnowWalk extends Ability
             return;
         }
 
-        int i = MathHelper.floor_double(player.posX);
-        int j = MathHelper.floor_double(player.posY);
-        int k = MathHelper.floor_double(player.posZ);
+        int i = MathHelper.floor(player.posX);
+        int j = MathHelper.floor(player.posY);
+        int k = MathHelper.floor(player.posZ);
 
         BlockPos blockpos = new BlockPos(i, j, k);
 
-        if (player.worldObj.getBlockState(blockpos).getMaterial() == Material.AIR && Blocks.SNOW_LAYER.canPlaceBlockAt(player.worldObj, blockpos))
+        if (player.world.getBlockState(blockpos).getMaterial() == Material.AIR && Blocks.SNOW_LAYER.canPlaceBlockAt(player.world, blockpos))
         {
-            player.worldObj.setBlockState(blockpos, Blocks.SNOW_LAYER.getDefaultState());
+            player.world.setBlockState(blockpos, Blocks.SNOW_LAYER.getDefaultState());
         }
     }
 }

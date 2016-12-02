@@ -92,7 +92,7 @@ public class GuiMenu extends Gui
      */
     public void renderMenu(int width, int height, int w, int h)
     {
-        EntityPlayer player = this.mc.thePlayer;
+        EntityPlayer player = this.mc.player;
         List<String> morphs = this.getMorph().getAcquiredMorphs();
         String label = "Demorph";
 
@@ -108,7 +108,7 @@ public class GuiMenu extends Gui
         int offset = this.index * margin;
         int maxScroll = this.getMorphCount() * margin - w / 2 - margin / 2 + 2;
 
-        offset = (int) MathHelper.clamp_float(offset, 0, maxScroll);
+        offset = (int) MathHelper.clamp(offset, 0, maxScroll);
 
         /* Render morphs */
         for (int i = 0; i <= morphs.size(); i++)
@@ -248,7 +248,7 @@ public class GuiMenu extends Gui
 
         this.timer = this.getDelay();
         this.index += factor;
-        this.index = MathHelper.clamp_int(this.index, -1, length - 1);
+        this.index = MathHelper.clamp(this.index, -1, length - 1);
     }
 
     /**
@@ -274,7 +274,7 @@ public class GuiMenu extends Gui
      */
     private IMorphing getMorph()
     {
-        return Morphing.get(this.mc.thePlayer);
+        return Morphing.get(this.mc.player);
     }
 
     /**

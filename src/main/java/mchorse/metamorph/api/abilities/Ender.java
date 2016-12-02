@@ -16,7 +16,7 @@ public class Ender extends Ability
     @Override
     public void update(EntityPlayer player)
     {
-        if (player.worldObj.isRemote)
+        if (player.world.isRemote)
         {
             Random rand = player.getRNG();
 
@@ -26,7 +26,7 @@ public class Ender extends Ability
                 double y = player.posY + rand.nextDouble() * (double) player.height - 0.25D;
                 double z = player.posZ + (rand.nextDouble() - 0.5D) * (double) player.width;
 
-                player.worldObj.spawnParticle(EnumParticleTypes.PORTAL, x, y, z, (rand.nextDouble() - 0.5D) * 2.0D, -rand.nextDouble(), (rand.nextDouble() - 0.5D) * 2.0D, new int[0]);
+                player.world.spawnParticle(EnumParticleTypes.PORTAL, x, y, z, (rand.nextDouble() - 0.5D) * 2.0D, -rand.nextDouble(), (rand.nextDouble() - 0.5D) * 2.0D, new int[0]);
             }
         }
     }

@@ -47,7 +47,7 @@ public class MorphHandler
         Entity source = event.getSource().getEntity();
         Entity target = event.getEntity();
 
-        if (target.worldObj.isRemote || !(source instanceof EntityPlayer) || target instanceof EntityPlayer)
+        if (target.world.isRemote || !(source instanceof EntityPlayer) || target instanceof EntityPlayer)
         {
             return;
         }
@@ -69,14 +69,14 @@ public class MorphHandler
             return;
         }
 
-        if (!player.worldObj.isRemote)
+        if (!player.world.isRemote)
         {
             if (!Metamorph.proxy.config.prevent_ghosts || !capability.getAcquiredMorphs().contains(morph))
             {
-                EntityMorph morphEntity = new EntityMorph(player.worldObj, player.getUniqueID(), morph);
+                EntityMorph morphEntity = new EntityMorph(player.world, player.getUniqueID(), morph);
 
                 morphEntity.setPositionAndRotation(target.posX, target.posY + target.height / 2, target.posZ, target.rotationYaw, target.rotationPitch);
-                player.worldObj.spawnEntityInWorld(morphEntity);
+                player.world.spawnEntity(morphEntity);
             }
         }
     }
@@ -177,12 +177,12 @@ public class MorphHandler
      */
     private void runFutureTasks(EntityPlayer player)
     {
-        if (player.worldObj.isRemote && !FUTURE_TASKS_CLIENT.isEmpty())
+        if (player.world.isRemote && !FUTURE_TASKS_CLIENT.isEmpty())
         {
             FUTURE_TASKS_CLIENT.remove(0).run();
         }
 
-        if (!player.worldObj.isRemote && !FUTURE_TASKS_SERVER.isEmpty())
+        if (!player.world.isRemote && !FUTURE_TASKS_SERVER.isEmpty())
         {
             FUTURE_TASKS_SERVER.remove(0).run();
         }

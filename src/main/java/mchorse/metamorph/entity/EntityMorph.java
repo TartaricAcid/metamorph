@@ -85,7 +85,7 @@ public class EntityMorph extends EntityLiving implements IEntityAdditionalSpawnD
         {
             float[] size = data.poses.get("standing").size;
 
-            this.setSize(MathHelper.clamp_float(size[0], 0, 1.5F), MathHelper.clamp_float(size[1], 0, 2.0F));
+            this.setSize(MathHelper.clamp(size[0], 0, 1.5F), MathHelper.clamp(size[1], 0, 2.0F));
         }
     }
 
@@ -117,9 +117,9 @@ public class EntityMorph extends EntityLiving implements IEntityAdditionalSpawnD
             return;
         }
 
-        if ((this.player == null || this.player.isDead) && !this.worldObj.isRemote && this.owner != null)
+        if ((this.player == null || this.player.isDead) && !this.world.isRemote && this.owner != null)
         {
-            this.player = this.worldObj.getPlayerEntityByUUID(this.owner);
+            this.player = this.world.getPlayerEntityByUUID(this.owner);
         }
 
         if (this.player != null && !this.player.isDead)
@@ -145,7 +145,7 @@ public class EntityMorph extends EntityLiving implements IEntityAdditionalSpawnD
      */
     private void grantMorph()
     {
-        if (this.worldObj.isRemote)
+        if (this.world.isRemote)
         {
             return;
         }
@@ -156,7 +156,7 @@ public class EntityMorph extends EntityLiving implements IEntityAdditionalSpawnD
         {
             Dispatcher.sendTo(new PacketAcquireMorph(morph), (EntityPlayerMP) player);
 
-            this.worldObj.playSound(null, this.posX, this.posY, this.posZ, SoundEvents.ENTITY_ITEM_PICKUP, SoundCategory.AMBIENT, 1.0F, 1.0F);
+            this.world.playSound(null, this.posX, this.posY, this.posZ, SoundEvents.ENTITY_ITEM_PICKUP, SoundCategory.AMBIENT, 1.0F, 1.0F);
         }
     }
 

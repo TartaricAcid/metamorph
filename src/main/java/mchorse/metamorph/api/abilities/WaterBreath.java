@@ -31,7 +31,7 @@ public class WaterBreath extends Ability
     @SideOnly(Side.CLIENT)
     public void onMorph(EntityPlayer player)
     {
-        if (player.worldObj.isRemote)
+        if (player.world.isRemote)
         {
             GuiIngameForge.renderAir = false;
         }
@@ -47,7 +47,7 @@ public class WaterBreath extends Ability
     @SideOnly(Side.CLIENT)
     public void onDemorph(EntityPlayer player)
     {
-        if (player.worldObj.isRemote)
+        if (player.world.isRemote)
         {
             GuiIngameForge.renderAir = true;
         }
