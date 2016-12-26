@@ -2,7 +2,7 @@ package mchorse.metamorph.capabilities.morphing;
 
 import java.util.List;
 
-import mchorse.metamorph.api.morph.Morph;
+import mchorse.metamorph.api.morphs.AbstractMorph;
 import net.minecraft.entity.player.EntityPlayer;
 
 /**
@@ -14,39 +14,34 @@ import net.minecraft.entity.player.EntityPlayer;
 public interface IMorphing
 {
     /**
-     * Add a morphing 
+     * Add a morph
      */
-    public boolean acquireMorph(String name);
+    public boolean acquireMorph(AbstractMorph morph);
 
     /**
      * Check if this capability has acquired a morph
      */
-    public boolean acquiredMorph(String name);
+    public boolean acquiredMorph(AbstractMorph morph);
 
     /**
-     * Get all acquired morphings
+     * Get all acquired morph
      */
-    public List<String> getAcquiredMorphs();
+    public List<AbstractMorph> getAcquiredMorphs();
 
     /**
-     * Set acquired morphings
+     * Set acquired morph
      */
-    public void setAcquiredMorphs(List<String> morphs);
+    public void setAcquiredMorphs(List<AbstractMorph> morphs);
 
     /**
      * Get current morph 
      */
-    public Morph getCurrentMorph();
+    public AbstractMorph getCurrentMorph();
 
     /**
-     * Get current morph's name 
+     * Set current morph
      */
-    public String getCurrentMorphName();
-
-    /**
-     * Set morph
-     */
-    public void setCurrentMorph(String name, EntityPlayer player, boolean force);
+    public void setCurrentMorph(AbstractMorph morph, EntityPlayer player, boolean force);
 
     /**
      * Demorph this capability 

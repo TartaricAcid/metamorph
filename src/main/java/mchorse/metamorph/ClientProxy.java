@@ -3,13 +3,11 @@ package mchorse.metamorph;
 import java.lang.reflect.Field;
 import java.util.Map;
 
-import mchorse.metamorph.api.Model;
+import mchorse.metamorph.api.MorphManager;
 import mchorse.metamorph.client.KeyboardHandler;
 import mchorse.metamorph.client.RenderingHandler;
 import mchorse.metamorph.client.gui.GuiMenu;
 import mchorse.metamorph.client.gui.GuiOverlay;
-import mchorse.metamorph.client.model.ModelCustom;
-import mchorse.metamorph.client.model.parsing.ModelParser;
 import mchorse.metamorph.client.render.RenderMorph;
 import mchorse.metamorph.client.render.RenderPlayer;
 import mchorse.metamorph.client.render.RenderSubPlayer;
@@ -19,6 +17,8 @@ import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.client.registry.RenderingRegistry;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 /**
  * Client proxy
@@ -27,6 +27,7 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
  * HUD morph panel and player rendering) and also responsible for loading 
  * (constructing ModelCustom out of) custom models. 
  */
+@SideOnly(Side.CLIENT)
 public class ClientProxy extends CommonProxy
 {
     /**
@@ -39,6 +40,11 @@ public class ClientProxy extends CommonProxy
      */
     public static GuiOverlay morphOverlay = new GuiOverlay();
 
+    /**
+     * Player renderer 
+     */
+    public static RenderPlayer playerRenderer;
+
     @Override
     public void preLoad(FMLPreInitializationEvent event)
     {
@@ -50,53 +56,23 @@ public class ClientProxy extends CommonProxy
     @Override
     public void load()
     {
-        super.load();
-
+        /* Rendering stuff */
         RenderManager manager = Minecraft.getMinecraft().getRenderManager();
         RenderPlayer render = new RenderPlayer(manager, 0.5F);
 
-        MinecraftForge.EVENT_BUS.register(new RenderingHandler(overlay, render, morphOverlay));
+        this.substitutePlayerRenderers(render, manager);
+
+        playerRenderer = render;
+
+        /* Continue loading process */
+        super.load();
+
+        /* Register client event handlers */
+        MinecraftForge.EVENT_BUS.register(new RenderingHandler(overlay, morphOverlay));
         MinecraftForge.EVENT_BUS.register(new KeyboardHandler(overlay));
 
-        this.substitutePlayerRenderers(render);
-    }
-
-    /**
-     * Load custom models.
-     * 
-     * This code is responsible for assembling client custom models out of 
-     * already parsed data models. 
-     */
-    @Override
-    @SuppressWarnings("unchecked")
-    public void loadModels()
-    {
-        super.loadModels();
-
-        for (Map.Entry<String, Model> model : this.models.models.entrySet())
-        {
-            Model data = model.getValue();
-
-            if (data.model.isEmpty())
-            {
-                /* Parse default type of model */
-                ModelParser.parse(model.getKey(), data);
-            }
-            else
-            {
-                try
-                {
-                    Class<? extends ModelCustom> clazz = (Class<? extends ModelCustom>) Class.forName(data.model);
-
-                    /* Parse custom custom (overcustomized) model */
-                    ModelParser.parse(model.getKey(), data, clazz);
-                }
-                catch (ClassNotFoundException e)
-                {
-                    e.printStackTrace();
-                }
-            }
-        }
+        /* Register client morph manager */
+        MorphManager.INSTANCE.registerClient();
     }
 
     /**
@@ -104,13 +80,13 @@ public class ClientProxy extends CommonProxy
      * hand.
      *
      * Please, kids, don't do that at home. This was made by an expert in
-     * this field, so please, don't override skinMap the way I did. Don't break
-     * the compatibility with this mod.
+     * his field, so please, don't override skinMap the way I did. Don't break
+     * the compatibility with this mod (already confirmed breaking while 
+     * using Metamorph and Blockbuster together).
      */
     @SuppressWarnings({"rawtypes", "unchecked"})
-    private void substitutePlayerRenderers(RenderPlayer render)
+    private void substitutePlayerRenderers(RenderPlayer render, RenderManager manager)
     {
-        RenderManager manager = Minecraft.getMinecraft().getRenderManager();
         Map<String, net.minecraft.client.renderer.entity.RenderPlayer> skins = null;
 
         /* Iterate over all render manager fields and get access to skinMap */

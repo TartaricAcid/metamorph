@@ -3,19 +3,17 @@ package mchorse.metamorph.client.gui;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeSet;
 
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 
-import mchorse.metamorph.api.morph.Morph;
-import mchorse.metamorph.api.morph.MorphManager;
+import mchorse.metamorph.api.MorphManager;
+import mchorse.metamorph.api.morphs.AbstractMorph;
 import mchorse.metamorph.capabilities.morphing.IMorphing;
 import mchorse.metamorph.capabilities.morphing.Morphing;
-import mchorse.metamorph.client.model.ModelCustom;
 import mchorse.metamorph.network.Dispatcher;
+import mchorse.metamorph.network.common.PacketAcquireMorph;
 import mchorse.metamorph.network.common.PacketMorph;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
@@ -41,13 +39,18 @@ public class GuiMorphs extends GuiScreen
 {
     /* GUI stuff */
     private GuiButton morph;
+    private GuiButton acquire;
     private GuiButton close;
 
     /* Data stuff */
     private List<MorphCell> morphs = new ArrayList<GuiMorphs.MorphCell>();
+
+    private final int margin = 20;
+
     private int selected = -1;
-    private float scroll = 0;
     private int perRow = 6;
+
+    private float scroll = 0;
     private boolean dragging = false;
 
     /* Initialization code */
@@ -60,22 +63,24 @@ public class GuiMorphs extends GuiScreen
      */
     public GuiMorphs()
     {
-        Map<String, Morph> morphs = MorphManager.INSTANCE.morphs;
         EntityPlayer player = Minecraft.getMinecraft().player;
         IMorphing morphing = Morphing.get(player);
 
         int index = 0;
 
-        for (String key : new TreeSet<String>(morphs.keySet()))
+        for (List<AbstractMorph> morphs : MorphManager.INSTANCE.getMorphs().morphs.values())
         {
-            this.morphs.add(new MorphCell(key, morphs.get(key), index));
-
-            if (morphing.isMorphed() && key.equals(morphing.getCurrentMorphName()))
+            for (AbstractMorph morph : morphs)
             {
-                this.selected = index;
-            }
+                this.morphs.add(new MorphCell(morph.name, morph, index));
 
-            index++;
+                if (morphing.isMorphed() && morph.equals(morphing.getCurrentMorph()))
+                {
+                    this.selected = index;
+                }
+
+                index++;
+            }
         }
     }
 
@@ -90,14 +95,15 @@ public class GuiMorphs extends GuiScreen
     @Override
     public void initGui()
     {
-        int w = width - 40;
-        int y = height - 25;
-        int x = (width - w) / 2;
+        int x = width - this.margin;
+        int y = 5;
 
-        morph = new GuiButton(0, x, y, 100, 20, I18n.format("metamorph.gui.morph"));
-        close = new GuiButton(1, x + w - 100, y, 100, 20, I18n.format("metamorph.gui.close"));
+        morph = new GuiButton(0, x - 190, y, 60, 20, I18n.format("metamorph.gui.morph"));
+        acquire = new GuiButton(1, x - 125, y, 60, 20, I18n.format("metamorph.gui.acquire"));
+        close = new GuiButton(2, x - 60, y, 60, 20, I18n.format("metamorph.gui.close"));
 
         this.buttonList.add(morph);
+        this.buttonList.add(acquire);
         this.buttonList.add(close);
     }
 
@@ -114,12 +120,20 @@ public class GuiMorphs extends GuiScreen
         {
             if (this.selected == -1)
             {
-                Dispatcher.sendToServer(new PacketMorph(""));
+                Dispatcher.sendToServer(new PacketMorph(null));
             }
             else
             {
                 MorphCell morph = this.morphs.get(this.selected);
-                Dispatcher.sendToServer(new PacketMorph(morph.name));
+                Dispatcher.sendToServer(new PacketMorph(morph.morph));
+            }
+        }
+        else if (button.id == 1)
+        {
+            if (this.selected != -1)
+            {
+                MorphCell morph = this.morphs.get(this.selected);
+                Dispatcher.sendToServer(new PacketAcquireMorph(morph.morph));
             }
         }
 
@@ -143,7 +157,7 @@ public class GuiMorphs extends GuiScreen
     protected void clampScroll()
     {
         float max = MathHelper.ceil((float) this.morphs.size() / (float) this.perRow) * 60;
-        float maxScroll = max - (height - 60);
+        float maxScroll = max - (height - 45);
 
         this.scroll = MathHelper.clamp(this.scroll, 0.0F, maxScroll);
     }
@@ -185,7 +199,7 @@ public class GuiMorphs extends GuiScreen
             return;
         }
 
-        int scrollX = width - 20;
+        int scrollX = width - this.margin / 4;
 
         /* Drag the scroll bar */
         if (mouseX >= scrollX && mouseX <= scrollX + 4)
@@ -196,11 +210,11 @@ public class GuiMorphs extends GuiScreen
         }
 
         /* Compute the selection index */
-        int w = (width - 40);
+        int w = width - 160;
         int m = w / this.perRow;
 
-        int x = ((mouseX - (width - w) / 2) / m);
-        int y = ((mouseY - 30 + (int) this.scroll) / 60);
+        int x = (mouseX - 145) / m;
+        int y = (mouseY - 30 + (int) this.scroll) / 60;
 
         int index = x + this.perRow * y;
 
@@ -281,18 +295,17 @@ public class GuiMorphs extends GuiScreen
 
         /* Draw panel backgrounds */
         this.drawDefaultBackground();
-        drawRect(0, height - 30, width, height, 0x88000000);
         drawRect(0, 0, width, 30, 0x88000000);
 
         /* Draw labels */
-        this.drawCenteredString(fontRendererObj, I18n.format("metamorph.gui.title"), width / 2, 10, 0xffffff);
-        this.drawCenteredString(fontRendererObj, selected, width / 2, height - 18, 0xffffff);
+        this.drawString(fontRendererObj, I18n.format("metamorph.gui.title"), 20, 11, 0xffffff);
+        this.drawCenteredString(fontRendererObj, selected, 70, height - 20, 0xffffff);
 
         /* Don't run with scissor, or you might get clipped */
-        GuiMenu.scissor(0, 30, width, height - 60, width, height);
+        GuiUtils.scissor(0, 30, width, height, width, height);
         EntityPlayer player = Minecraft.getMinecraft().player;
 
-        int w = (width - 40);
+        int w = width - 160;
         int m = w / this.perRow;
 
         this.drawScrollbar(mouseX, mouseY);
@@ -302,21 +315,21 @@ public class GuiMorphs extends GuiScreen
         {
             int i = cell.index;
 
-            int x = i % this.perRow * m + (width - w) / 2;
+            int x = i % this.perRow * m + 145;
             int y = i / this.perRow * 60 + 20 - (int) this.scroll;
             float scale = 21.5F;
 
-            /* Render the model */
-            cell.model.pose = cell.model.model.poses.get("standing");
-            cell.model.swingProgress = 0;
-
-            Minecraft.getMinecraft().renderEngine.bindTexture(cell.model.model.defaultTexture);
-            GuiMenu.drawModel(cell.model, player, x + m / 2, y + 60, scale);
+            this.renderMorph(cell, player, x + m / 2, y + 60, scale);
 
             if (i == this.selected)
             {
                 this.renderSelected(x, y + 10, m, 60);
             }
+        }
+
+        if (this.selected != -1)
+        {
+            this.renderMorph(this.morphs.get(this.selected), player, 70, height - (int) ((float) height / 2.6), 43);
         }
 
         /* Disable scissors */
@@ -327,11 +340,20 @@ public class GuiMorphs extends GuiScreen
     }
 
     /**
+     * Render a morph 
+     */
+    private void renderMorph(MorphCell cell, EntityPlayer player, int x, int y, float scale)
+    {
+        /* Render the model */
+        cell.morph.renderOnScreen(player, x, y, scale, 1.0F);
+    }
+
+    /**
      * Draw scroll bar in GUI.
      */
     private void drawScrollbar(int mouseX, int mouseY)
     {
-        int trimmedHeight = (height - 60);
+        int trimmedHeight = (height - 33);
 
         float max = MathHelper.ceil((float) this.morphs.size() / (float) this.perRow) * 60;
         float maxScroll = max - trimmedHeight;
@@ -343,7 +365,7 @@ public class GuiMorphs extends GuiScreen
             this.clampScroll();
         }
 
-        int x = width - 20;
+        int x = width - this.margin / 4;
         int h = MathHelper.clamp((int) (factor * trimmedHeight), 20, trimmedHeight);
         int y = (int) (this.scroll / maxScroll * (trimmedHeight - h - 4));
 
@@ -375,17 +397,14 @@ public class GuiMorphs extends GuiScreen
     public static class MorphCell
     {
         public String name;
-        public Morph morph;
-        public ModelCustom model;
+        public AbstractMorph morph;
         public int index;
 
-        public MorphCell(String name, Morph morph, int index)
+        public MorphCell(String name, AbstractMorph morph, int index)
         {
             this.name = name;
             this.morph = morph;
             this.index = index;
-
-            this.model = ModelCustom.MODELS.get(name);
         }
     }
 }

@@ -3,8 +3,8 @@ package mchorse.metamorph.entity;
 import java.util.UUID;
 
 import io.netty.buffer.ByteBuf;
-import mchorse.metamorph.Metamorph;
-import mchorse.metamorph.api.Model;
+import mchorse.metamorph.api.MorphManager;
+import mchorse.metamorph.api.morphs.AbstractMorph;
 import mchorse.metamorph.capabilities.morphing.IMorphing;
 import mchorse.metamorph.capabilities.morphing.Morphing;
 import mchorse.metamorph.network.Dispatcher;
@@ -19,6 +19,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData;
@@ -30,7 +31,7 @@ import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData;
  * acquire.
  * 
  * This entity is similar to {@link EntityXPOrb} or {@link EntityItem}, in terms 
- * of pickin up.
+ * of picking up.
  */
 public class EntityMorph extends EntityLiving implements IEntityAdditionalSpawnData
 {
@@ -38,7 +39,7 @@ public class EntityMorph extends EntityLiving implements IEntityAdditionalSpawnD
     private EntityPlayer player;
 
     public int timer = 30;
-    public String morph = "";
+    public AbstractMorph morph;
 
     /**
      * Initiate the morph and make this entity invulnerable
@@ -51,7 +52,10 @@ public class EntityMorph extends EntityLiving implements IEntityAdditionalSpawnD
         this.setCustomNameTag("Morph");
     }
 
-    public EntityMorph(World worldIn, UUID owner, String morph)
+    /**
+     * Initiate the morph with morph and owner's UUID 
+     */
+    public EntityMorph(World worldIn, UUID owner, AbstractMorph morph)
     {
         this(worldIn);
 
@@ -71,22 +75,15 @@ public class EntityMorph extends EntityLiving implements IEntityAdditionalSpawnD
     @Override
     public ITextComponent getDisplayName()
     {
-        return Metamorph.proxy.morphName(this);
+        return new TextComponentTranslation("entity." + this.morph + ".name");
     }
 
     /**
-     * Set size based on the morph's model
+     * Set size based on the morph's characteristics
      */
-    private void setSize(String morph)
+    private void setSize(AbstractMorph morph)
     {
-        Model data = Metamorph.proxy.models.models.get(morph);
-
-        if (data != null)
-        {
-            float[] size = data.poses.get("standing").size;
-
-            this.setSize(MathHelper.clamp(size[0], 0, 1.5F), MathHelper.clamp(size[1], 0, 2.0F));
-        }
+        this.setSize(MathHelper.clamp(morph.getWidth(this), 0, 1.5F), MathHelper.clamp(morph.getHeight(this), 0, 2.0F));
     }
 
     /**
@@ -172,9 +169,12 @@ public class EntityMorph extends EntityLiving implements IEntityAdditionalSpawnD
             compound.setString("Owner", this.owner.toString());
         }
 
-        if (!this.morph.isEmpty())
+        if (this.morph != null)
         {
-            compound.setString("Morph", this.morph);
+            NBTTagCompound tag = new NBTTagCompound();
+
+            this.morph.toNBT(tag);
+            compound.setTag("Morph", tag);
         }
     }
 
@@ -186,16 +186,33 @@ public class EntityMorph extends EntityLiving implements IEntityAdditionalSpawnD
         String owner = compound.getString("Owner");
 
         this.owner = owner.isEmpty() ? null : UUID.fromString(owner);
-        this.morph = compound.getString("Morph");
+
+        if (compound.hasKey("Morph", 10))
+        {
+            this.morph = MorphManager.INSTANCE.morphFromNBT(compound.getCompoundTag("Morph"));
+        }
 
         this.setSize(morph);
     }
+
+    /* Spawn data read / write */
 
     @Override
     public void writeSpawnData(ByteBuf buffer)
     {
         ByteBufUtils.writeUTF8String(buffer, this.owner != null ? this.owner.toString() : "");
-        ByteBufUtils.writeUTF8String(buffer, this.morph);
+
+        NBTTagCompound tag = new NBTTagCompound();
+        this.morph.toNBT(tag);
+
+        boolean hasData = tag != null && !tag.hasNoTags();
+
+        buffer.writeBoolean(hasData);
+
+        if (hasData)
+        {
+            ByteBufUtils.writeTag(buffer, tag);
+        }
     }
 
     @Override
@@ -204,7 +221,13 @@ public class EntityMorph extends EntityLiving implements IEntityAdditionalSpawnD
         String owner = ByteBufUtils.readUTF8String(buffer);
 
         this.owner = owner.isEmpty() ? null : UUID.fromString(owner);
-        this.morph = ByteBufUtils.readUTF8String(buffer);
+
+        if (buffer.readBoolean())
+        {
+            NBTTagCompound tag = ByteBufUtils.readTag(buffer);
+
+            this.morph = MorphManager.INSTANCE.morphFromNBT(tag);
+        }
 
         this.setSize(morph);
     }

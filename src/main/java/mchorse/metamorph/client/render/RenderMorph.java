@@ -3,6 +3,7 @@ package mchorse.metamorph.client.render;
 import java.util.Map;
 
 import mchorse.metamorph.api.Model;
+import mchorse.metamorph.api.morphs.CustomMorph;
 import mchorse.metamorph.client.model.ModelCustom;
 import mchorse.metamorph.entity.EntityMorph;
 import net.minecraft.client.model.ModelBase;
@@ -35,19 +36,34 @@ public class RenderMorph extends RenderLivingBase<EntityMorph>
      * coloring. 
      */
     @Override
+    @SuppressWarnings({"rawtypes", "unchecked"})
     public void doRender(EntityMorph entity, double x, double y, double z, float entityYaw, float partialTicks)
     {
-        this.setupModel(entity);
-
-        if (this.mainModel == null) return;
-
         GlStateManager.color(0.1F, 0.9F, 1.0F, 0.7F);
 
         GlStateManager.enableNormalize();
         GlStateManager.enableBlend();
         GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
 
-        super.doRender(entity, x, y, z, entityYaw, partialTicks);
+        if (entity.morph instanceof CustomMorph)
+        {
+            this.setupModel(entity);
+
+            if (this.mainModel == null) return;
+
+            super.doRender(entity, x, y, z, entityYaw, partialTicks);
+        }
+        else if (entity.morph instanceof mchorse.metamorph.api.morphs.EntityMorph)
+        {
+            mchorse.metamorph.api.morphs.EntityMorph morph = (mchorse.metamorph.api.morphs.EntityMorph) entity.morph;
+            morph.update(entity, null);
+            Render render = morph.renderer;
+
+            if (render != null)
+            {
+                render.doRender(morph.getEntity(), x, y, z, entityYaw, partialTicks);
+            }
+        }
 
         GlStateManager.disableBlend();
         GlStateManager.disableNormalize();
@@ -89,8 +105,6 @@ public class RenderMorph extends RenderLivingBase<EntityMorph>
     @Override
     protected void preRenderCallback(EntityMorph entity, float partialTickTime)
     {
-        Model data = ((ModelCustom) this.mainModel).model;
-
         /* Interpolate scale */
         float scale = 1.0F - ((float) entity.timer / 30);
 
@@ -99,9 +113,18 @@ public class RenderMorph extends RenderLivingBase<EntityMorph>
             scale = 1.0F;
         }
 
-        float x = MathHelper.clamp(data.scale[0], 0.0F, 1.5F);
-        float y = MathHelper.clamp(data.scale[1], 0.0F, 1.5F);
-        float z = MathHelper.clamp(data.scale[2], 0.0F, 1.5F);
+        float x = 1.0F;
+        float y = 1.0F;
+        float z = 1.0F;
+
+        if (entity.morph instanceof CustomMorph)
+        {
+            Model data = ((ModelCustom) this.mainModel).model;
+
+            x = MathHelper.clamp(data.scale[0], 0.0F, 1.5F);
+            y = MathHelper.clamp(data.scale[1], 0.0F, 1.5F);
+            z = MathHelper.clamp(data.scale[2], 0.0F, 1.5F);
+        }
 
         GlStateManager.scale(x * scale, y * scale, z * scale);
     }

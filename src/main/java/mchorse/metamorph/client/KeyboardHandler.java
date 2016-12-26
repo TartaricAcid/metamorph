@@ -36,12 +36,14 @@ public class KeyboardHandler
     private KeyBinding keySelectMorph;
     private KeyBinding keyDemorph;
 
+    /* Survival morphing menu */
     private GuiMenu overlay;
 
     public KeyboardHandler()
     {
         String category = "key.metamorph";
 
+        /* Create key bindings */
         keyAction = new KeyBinding("key.metamorph.action", Keyboard.KEY_V, category);
         keyMenu = new KeyBinding("key.metamorph.menu", Keyboard.KEY_B, category);
 
@@ -50,6 +52,7 @@ public class KeyboardHandler
         keySelectMorph = new KeyBinding("key.metamorph.morph.select", Keyboard.KEY_RETURN, category);
         keyDemorph = new KeyBinding("key.metamorph.morph.demorph", Keyboard.KEY_PERIOD, category);
 
+        /* Register them in the client registry */
         ClientRegistry.registerKeyBinding(keyAction);
         ClientRegistry.registerKeyBinding(keyMenu);
 
@@ -114,8 +117,28 @@ public class KeyboardHandler
         /* Apply selected morph */
         if (keySelectMorph.isPressed())
         {
-            Dispatcher.sendToServer(new PacketSelectMorph(this.overlay.index));
-            this.overlay.timer = 0;
+            IMorphing morphing = Morphing.get(mc.player);
+
+            /* Checking if we're morphing in the same thing */
+            boolean isSame = false;
+            boolean morphed = morphing.isMorphed();
+
+            if (this.overlay.index == -1)
+            {
+                isSame = !morphed;
+            }
+
+            if (this.overlay.index >= 0 && morphed)
+            {
+                isSame = morphing.getCurrentMorph().equals(morphing.getAcquiredMorphs().get(this.overlay.index));
+            }
+
+            /* No need to send packet if it's the same */
+            if (!isSame)
+            {
+                Dispatcher.sendToServer(new PacketSelectMorph(this.overlay.index));
+                this.overlay.timer = 0;
+            }
         }
 
         /* Demorph from current morph */

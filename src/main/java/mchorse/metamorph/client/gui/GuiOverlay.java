@@ -4,9 +4,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import mchorse.metamorph.api.Model;
-import mchorse.metamorph.api.morph.MorphManager;
-import mchorse.metamorph.client.model.ModelCustom;
+import mchorse.metamorph.api.morphs.AbstractMorph;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
@@ -55,17 +53,12 @@ public class GuiOverlay extends Gui
             int y = height - 10 + (disappear ? (int) (40 * (float) progress / this.cap) : 0);
             int color = disappear ? 0x00ffffff + (alpha << 24) : 0xffffffff;
 
-            /* Prepare the model */
-            Model data = MorphManager.INSTANCE.morphs.get(morph.morph).model;
-            ModelCustom model = ModelCustom.MODELS.get(morph.morph);
             String string = "Acquired";
 
-            model.pose = model.model.poses.get("standing");
-            model.swingProgress = 0;
+            /* Prepare the model */
+            morph.morph.renderOnScreen(mc.player, 15, y, 15, (float) alpha / 255);
 
             /* Render overlay */
-            mc.renderEngine.bindTexture(data.defaultTexture);
-            GuiMenu.drawModel(model, mc.player, 15, y, 15, (float) alpha / 255);
             font.drawString(string, 30, y - 7, color);
 
             morph.timer--;
@@ -81,7 +74,7 @@ public class GuiOverlay extends Gui
     /**
      * Add an acquired morph to this overlay. 
      */
-    public void add(String name)
+    public void add(AbstractMorph acquired)
     {
         for (AcquiredMorph morph : this.morphs)
         {
@@ -91,7 +84,7 @@ public class GuiOverlay extends Gui
             }
         }
 
-        this.morphs.add(new AcquiredMorph(name));
+        this.morphs.add(new AcquiredMorph(acquired));
     }
 
     /**
@@ -102,10 +95,10 @@ public class GuiOverlay extends Gui
      */
     public static class AcquiredMorph
     {
-        public String morph;
+        public AbstractMorph morph;
         public int timer = 240;
 
-        public AcquiredMorph(String morph)
+        public AcquiredMorph(AbstractMorph morph)
         {
             this.morph = morph;
         }

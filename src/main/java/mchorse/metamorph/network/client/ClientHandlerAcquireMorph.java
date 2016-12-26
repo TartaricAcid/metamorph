@@ -17,7 +17,6 @@ public class ClientHandlerAcquireMorph extends ClientMessageHandler<PacketAcquir
         IMorphing capability = Morphing.get(player);
 
         capability.acquireMorph(message.morph);
-
         ClientProxy.morphOverlay.add(message.morph);
     }
 }
